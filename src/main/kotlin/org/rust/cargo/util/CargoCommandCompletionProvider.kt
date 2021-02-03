@@ -5,13 +5,16 @@
 
 package org.rust.cargo.util
 
+import com.intellij.codeInsight.completion.PrioritizedLookupElement
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import org.rust.cargo.icons.CargoIcons
 import org.rust.cargo.project.model.CargoProject
 import org.rust.cargo.project.model.CargoProjectsService
+import org.rust.cargo.project.settings.toolchain
 import org.rust.cargo.project.workspace.CargoWorkspace
 import org.rust.cargo.project.workspace.PackageOrigin
+import org.rust.cargo.toolchain.tools.rustup
 import org.rust.lang.core.completion.withPriority
 import org.rust.stdext.buildList
 
@@ -62,7 +65,23 @@ private fun getCompleterForOption(name: String): ArgCompleter? = when (name) {
     "bench" -> targetCompleter(CargoWorkspace.TargetKind.Bench)
     "package" -> { ctx -> ctx.currentWorkspace?.packages.orEmpty().map { it.lookupElement } }
     "manifest-path" -> { ctx -> ctx.projects.map { it.lookupElement } }
+    "target" -> { ctx -> getTargetTripleCompletions(ctx) }
     else -> null
+}
+
+private fun getTargetTripleCompletions(ctx: Context): List<LookupElement> {
+    val path = ctx.currentWorkspace?.workspaceRootPath ?: return emptyList()
+    val rustup = ctx.projects.firstOrNull()?.project?.toolchain?.rustup(path) ?: return emptyList()
+
+    return rustup.listTargets().map {
+        val lookupElement = LookupElementBuilder.create(it.name)
+            .withBoldness(it.isInstalled)
+
+        PrioritizedLookupElement.withPriority(
+            lookupElement,
+            (if (it.isInstalled) 1 else 0).toDouble()
+        )
+    }
 }
 
 private val CargoProject.lookupElement: LookupElement
