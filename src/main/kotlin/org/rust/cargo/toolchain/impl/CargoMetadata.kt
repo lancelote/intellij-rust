@@ -17,7 +17,9 @@ import org.rust.cargo.project.workspace.*
 import org.rust.cargo.project.workspace.CargoWorkspace.Edition
 import org.rust.cargo.project.workspace.CargoWorkspace.LibKind
 import org.rust.openapiext.findFileByMaybeRelativePath
+import org.rust.stdext.HashCode
 import org.rust.stdext.mapToSet
+import java.nio.file.Path
 import java.util.*
 
 private val LOG = Logger.getInstance(CargoMetadata::class.java)
@@ -322,7 +324,7 @@ object CargoMetadata {
 
     fun clean(
         project: Project,
-        buildScriptsInfo: BuildScriptsInfo? = null,
+        buildMessages: BuildMessages? = null,
         buildPlan: CargoBuildPlan? = null
     ): CargoWorkspaceData {
         val fs = LocalFileSystem.getInstance()
@@ -337,8 +339,8 @@ object CargoMetadata {
                     LOG.error("Could not find package with `id` '${pkg.id}' in `resolve` section of the `cargo metadata` output.")
                 }
                 val enabledFeatures = resolveNode?.features.orEmpty().toSet() // features enabled by Cargo
-                val buildScriptMessage = buildScriptsInfo?.get(pkg.id)
-                pkg.clean(fs, pkg.id in members, variables, enabledFeatures, buildScriptMessage)
+                val pkgBuildMessages = buildMessages?.get(pkg.id).orEmpty()
+                pkg.clean(fs, pkg.id in members, variables, enabledFeatures, pkgBuildMessages)
             },
             project.resolve.nodes.associate { node ->
                 val dependencySet = if (node.deps != null) {
@@ -362,7 +364,7 @@ object CargoMetadata {
         isWorkspaceMember: Boolean,
         variables: PackageVariables,
         enabledFeatures: Set<String>,
-        buildScriptMessage: BuildScriptMessage?
+        buildMessages: List<CompilerMessage>
     ): CargoWorkspaceData.Package? {
         val root = fs.refreshAndFindFileByPath(PathUtil.getParentPath(manifest_path))
             ?.let { if (isWorkspaceMember) it else it.canonicalFile }
@@ -376,6 +378,9 @@ object CargoMetadata {
                 features[dependency.name] = emptyList()
             }
         }
+
+        val buildScriptMessage = buildMessages.find { it is BuildScriptMessage } as? BuildScriptMessage
+        val procMacroArtifact = findProcMacroArtifact(buildMessages)
 
         val cfgOptions = buildScriptMessage?.cfgs?.let { CfgOptions.parse(it) }
 
@@ -401,8 +406,26 @@ object CargoMetadata {
             enabledFeatures = enabledFeatures,
             cfgOptions = cfgOptions,
             env = env,
-            outDirUrl = outDir?.url
+            outDirUrl = outDir?.url,
+            procMacroArtifact = procMacroArtifact
         )
+    }
+
+    private fun findProcMacroArtifact(buildMessages: List<CompilerMessage>): CargoWorkspaceData.ProcMacroArtifact? {
+        val procMacroArtifacts = buildMessages
+            .filterIsInstance<CompilerArtifactMessage>()
+            .filter {
+                it.target.kind.contains("proc-macro") && it.target.crate_types.contains("proc-macro")
+            }
+
+        val procMacroArtifactPath = procMacroArtifacts
+            .flatMap { it.filenames }
+            .find { file -> listOf("dll", "so", "dylib").any { file.endsWith(it) } }
+
+        return procMacroArtifactPath?.let {
+            val path = Path.of(procMacroArtifactPath)
+            CargoWorkspaceData.ProcMacroArtifact(path, HashCode.ofFile(path))
+        }
     }
 
     private fun Target.clean(root: VirtualFile, isWorkspaceMember: Boolean): CargoWorkspaceData.Target? {
