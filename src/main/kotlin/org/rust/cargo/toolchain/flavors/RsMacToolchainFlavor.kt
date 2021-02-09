@@ -5,11 +5,13 @@
 
 package org.rust.cargo.toolchain.flavors
 
+import com.intellij.openapi.util.SystemInfo
 import com.intellij.util.io.isDirectory
 import org.rust.stdext.toPath
 import java.nio.file.Path
 
-object RsMacToolchainFlavor : RsToolchainFlavor() {
+class RsMacToolchainFlavor : RsToolchainFlavor() {
+
     override fun getHomePathCandidates(): List<Path> {
         val path = "/usr/local/Cellar/rust/bin".toPath()
         return if (path.isDirectory()) {
@@ -18,4 +20,6 @@ object RsMacToolchainFlavor : RsToolchainFlavor() {
             emptyList()
         }
     }
+
+    override fun isApplicable(): Boolean = SystemInfo.isMac
 }

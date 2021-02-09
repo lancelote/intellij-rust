@@ -47,6 +47,12 @@ jobs:
                       base-ide: idea
                       platform-version: 203
                       resolve-engine: resolve-old
+                    - os: windows-latest
+                      rust-version: 1.48.0
+                      base-ide: idea
+                      platform-version: 203
+                      resolve-engine: resolve-old
+                      uses-wsl: true
 
         runs-on: ${{ matrix.os }}
         timeout-minutes: 60
@@ -63,6 +69,7 @@ jobs:
                   java-version: 11
 
             - name: Set up Rust
+              if: matrix.uses-wsl != true
               uses: actions-rs/toolchain@v1
               with:
                   profile: minimal
@@ -72,12 +79,20 @@ jobs:
 
             # Requires for tests with overridden toolchain
             - name: Set up nightly Rust
+              if: matrix.uses-wsl != true
               uses: actions-rs/toolchain@v1
               with:
                   profile: minimal
                   toolchain: nightly
                   components: rust-src
                   default: false
+
+            - name: Set up WSL Rust
+              if: matrix.uses-wsl
+              uses: Vampire/setup-wsl@v1
+              with:
+                  additional-packages:
+                      cargo
 
             - name: Cache evcxr
               uses: actions/cache@v2

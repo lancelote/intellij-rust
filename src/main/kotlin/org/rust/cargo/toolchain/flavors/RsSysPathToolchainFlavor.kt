@@ -10,7 +10,7 @@ import org.rust.stdext.toPath
 import java.io.File
 import java.nio.file.Path
 
-object RsSysPathToolchainFlavor : RsToolchainFlavor() {
+class RsSysPathToolchainFlavor : RsToolchainFlavor() {
     override fun getHomePathCandidates(): List<Path> =
         System.getenv("PATH")
             .orEmpty()

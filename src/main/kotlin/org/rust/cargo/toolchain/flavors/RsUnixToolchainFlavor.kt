@@ -5,13 +5,17 @@
 
 package org.rust.cargo.toolchain.flavors
 
+import com.intellij.openapi.util.SystemInfo
 import com.intellij.util.io.isDirectory
 import org.rust.stdext.toPath
 import java.nio.file.Path
 
-object RsUnixToolchainFlavor : RsToolchainFlavor() {
+class RsUnixToolchainFlavor : RsToolchainFlavor() {
+
     override fun getHomePathCandidates(): List<Path> =
         listOf("/usr/local/bin", "/usr/bin")
             .map { it.toPath() }
             .filter { it.isDirectory() }
+
+    override fun isApplicable(): Boolean = SystemInfo.isUnix
 }

@@ -12,7 +12,7 @@ import org.rust.cargo.util.hasExecutable
 import org.rust.stdext.toPath
 import java.nio.file.Path
 
-object RustupToolchainFlavor : RsToolchainFlavor() {
+class RustupToolchainFlavor : RsToolchainFlavor() {
 
     override fun getHomePathCandidates(): List<Path> {
         val path = FileUtil.expandUserHome("~/.cargo/bin").toPath()

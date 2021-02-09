@@ -1076,16 +1076,22 @@
                          implementation="org.rust.cargo.toolchain.flavors.RsSysPathToolchainFlavor"/>
 
         <toolchainFlavor id="rust.unixToolchainFlavor"
-                         implementation="org.rust.cargo.toolchain.flavors.RsUnixToolchainFlavor"
-                         os="unix"/>
+                         implementation="org.rust.cargo.toolchain.flavors.RsUnixToolchainFlavor"/>
 
         <toolchainFlavor id="rust.macToolchainFlavor"
-                         implementation="org.rust.cargo.toolchain.flavors.RsMacToolchainFlavor"
-                         os="mac"/>
+                         implementation="org.rust.cargo.toolchain.flavors.RsMacToolchainFlavor"/>
 
         <toolchainFlavor id="rust.winToolchainFlavor"
-                         implementation="org.rust.cargo.toolchain.flavors.RsWinToolchainFlavor"
-                         os="windows"/>
+                         implementation="org.rust.cargo.toolchain.flavors.RsWinToolchainFlavor"/>
+
+        <toolchainFlavor id="rust.wslRustupToolchainFlavor"
+                         implementation="org.rust.cargo.toolchain.wsl.flavors.RsWslRustupToolchainFlavor"/>
+
+        <toolchainFlavor id="rust.wslSysPathToolchainFlavor"
+                         implementation="org.rust.cargo.toolchain.wsl.flavors.RsWslSysPathToolchainFlavor"/>
+
+        <toolchainFlavor id="rust.wslUnixToolchainFlavor"
+                         implementation="org.rust.cargo.toolchain.wsl.flavors.RsWslUnixToolchainFlavor"/>
 
     </extensions>
 
@@ -1094,6 +1100,7 @@
         <!-- Toolchains -->
 
         <toolchainProvider implementation="org.rust.cargo.toolchain.RsLocalToolchainProvider"/>
+        <toolchainProvider implementation="org.rust.cargo.toolchain.wsl.RsWslToolchainProvider"/>
 
     </extensions>
 

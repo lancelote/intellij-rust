@@ -10,6 +10,7 @@ import com.intellij.util.io.isDirectory
 import org.rust.cargo.toolchain.tools.Cargo
 import org.rust.cargo.toolchain.tools.Rustc
 import org.rust.cargo.util.hasExecutable
+import org.rust.cargo.util.pathToExecutable
 import java.nio.file.Path
 
 abstract class RsToolchainFlavor {
@@ -19,23 +20,35 @@ abstract class RsToolchainFlavor {
     protected abstract fun getHomePathCandidates(): List<Path>
 
     /**
+     * Flavor is added to result in [getApplicableFlavors] if this method returns true.
+     * @return whether this flavor is applicable.
+     */
+    protected open fun isApplicable(): Boolean = true
+
+    /**
      * Checks if the path is the name of a Rust toolchain of this flavor.
      *
      * @param path path to check.
      * @return true if paths points to a valid home.
      */
     protected open fun isValidToolchainPath(path: Path): Boolean {
-        return path.isDirectory()
-            && path.hasExecutable(Rustc.NAME)
-            && path.hasExecutable(Cargo.NAME)
+        return path.isDirectory() &&
+            hasExecutable(path, Rustc.NAME) &&
+            hasExecutable(path, Cargo.NAME)
     }
 
-    companion object {
-        private val EP_NAME: ExtensionPointName<RsToolchainFlavor> = ExtensionPointName.create("org.rust.toolchainFlavor")
+    protected open fun hasExecutable(path: Path, toolName: String): Boolean = path.hasExecutable(toolName)
 
-        fun getFlavors(): List<RsToolchainFlavor> = EP_NAME.extensionList
+    protected open fun pathToExecutable(path: Path, toolName: String): Path = path.pathToExecutable(toolName)
+
+    companion object {
+        private val EP_NAME: ExtensionPointName<RsToolchainFlavor> =
+            ExtensionPointName.create("org.rust.toolchainFlavor")
+
+        fun getApplicableFlavors(): List<RsToolchainFlavor> =
+            EP_NAME.extensionList.filter { it.isApplicable() }
 
         fun getFlavor(path: Path): RsToolchainFlavor? =
-            getFlavors().find { flavor -> flavor.isValidToolchainPath(path) }
+            getApplicableFlavors().find { flavor -> flavor.isValidToolchainPath(path) }
     }
 }
