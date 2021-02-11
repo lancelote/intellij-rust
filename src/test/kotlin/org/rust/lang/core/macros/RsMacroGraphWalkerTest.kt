@@ -10,6 +10,8 @@ import org.intellij.lang.annotations.Language
 import org.rust.ProjectDescriptor
 import org.rust.RsTestBase
 import org.rust.WithStdlibRustProjectDescriptor
+import org.rust.lang.core.macros.decl.FragmentKind
+import org.rust.lang.core.macros.decl.MacroGraphWalker
 import org.rust.lang.core.psi.RsMacroCall
 import org.rust.lang.core.psi.ext.*
 import java.util.*

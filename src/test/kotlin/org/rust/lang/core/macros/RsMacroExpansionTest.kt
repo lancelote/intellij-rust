@@ -9,6 +9,7 @@ import com.intellij.psi.tree.TokenSet
 import org.rust.ProjectDescriptor
 import org.rust.WithDependencyRustProjectDescriptor
 import org.rust.WithStdlibRustProjectDescriptor
+import org.rust.lang.core.macros.decl.MacroExpansionMarks
 import org.rust.lang.core.psi.RS_KEYWORDS
 import org.rust.lang.core.psi.RsElementTypes.CRATE
 import org.rust.lang.core.psi.tokenSetOf
@@ -262,7 +263,8 @@ class RsMacroExpansionTest : RsMacroExpansionTestBase() {
         fn foo() {}
     """)
 
-    fun `test empty group`() = doTest(MacroExpansionMarks.groupInputEnd1, """
+    fun `test empty group`() = doTest(
+        MacroExpansionMarks.groupInputEnd1, """
         macro_rules! foo {
             ($ ($ i:item)*) => ($ ( $ i )*)
         }
@@ -281,7 +283,8 @@ class RsMacroExpansionTest : RsMacroExpansionTestBase() {
         fn foo() {}
     """)
 
-    fun `test group with $crate usage`() = doTest(MacroExpansionMarks.groupInputEnd1, """
+    fun `test group with $crate usage`() = doTest(
+        MacroExpansionMarks.groupInputEnd1, """
         macro_rules! foo {
             ($ ($ i:item)*; $ ($ j:item)*) => ($ ( use $ crate::$ i; )* $ ( use $ crate::$ i; )*)
         }
@@ -344,7 +347,8 @@ class RsMacroExpansionTest : RsMacroExpansionTestBase() {
         fn bar() {}
     """)
 
-    fun `test match pattern by first token`() = doTest(MacroExpansionMarks.failMatchPatternByToken, """
+    fun `test match pattern by first token`() = doTest(
+        MacroExpansionMarks.failMatchPatternByToken, """
         macro_rules! foo {
             ($ i:ident) => (
                 mod $ i {}
@@ -367,7 +371,8 @@ class RsMacroExpansionTest : RsMacroExpansionTestBase() {
         struct Baz;
     """)
 
-    fun `test match pattern by last token`() = doTest(MacroExpansionMarks.failMatchPatternByToken, """
+    fun `test match pattern by last token`() = doTest(
+        MacroExpansionMarks.failMatchPatternByToken, """
         macro_rules! foo {
             ($ i:ident) => (
                 mod $ i {}
@@ -390,7 +395,8 @@ class RsMacroExpansionTest : RsMacroExpansionTestBase() {
         struct Baz;
     """)
 
-    fun `test match pattern by word token 1`() = doTest(MacroExpansionMarks.failMatchPatternByToken, """
+    fun `test match pattern by word token 1`() = doTest(
+        MacroExpansionMarks.failMatchPatternByToken, """
         macro_rules! foo {
             ($ i:ident) => (
                 mod $ i {}
@@ -413,7 +419,8 @@ class RsMacroExpansionTest : RsMacroExpansionTestBase() {
         struct Baz;
     """)
 
-    fun `test match pattern by word token 2`() = doTest(MacroExpansionMarks.failMatchPatternByToken, """
+    fun `test match pattern by word token 2`() = doTest(
+        MacroExpansionMarks.failMatchPatternByToken, """
         macro_rules! foo {
             ($ i:ident) => (
                 mod $ i {}
@@ -436,7 +443,8 @@ class RsMacroExpansionTest : RsMacroExpansionTestBase() {
         struct Baz;
     """)
 
-    fun `test match pattern by word token 3`() = doTest(MacroExpansionMarks.failMatchPatternByToken, """
+    fun `test match pattern by word token 3`() = doTest(
+        MacroExpansionMarks.failMatchPatternByToken, """
         macro_rules! foo {
             ($ i:ident) => (
                 mod $ i {}
@@ -459,7 +467,8 @@ class RsMacroExpansionTest : RsMacroExpansionTestBase() {
         struct Baz;
     """)
 
-    fun `test match pattern by binding type 1`() = doTest(MacroExpansionMarks.failMatchPatternByExtraInput, """
+    fun `test match pattern by binding type 1`() = doTest(
+        MacroExpansionMarks.failMatchPatternByExtraInput, """
         macro_rules! foo {
             ($ i:ident) => (
                 fn $ i() {}
@@ -476,7 +485,8 @@ class RsMacroExpansionTest : RsMacroExpansionTestBase() {
         struct Bar { field: Baz<u8> }
     """)
 
-    fun `test match pattern by binding type 2`() = doTest(MacroExpansionMarks.failMatchPatternByBindingType, """
+    fun `test match pattern by binding type 2`() = doTest(
+        MacroExpansionMarks.failMatchPatternByBindingType, """
         macro_rules! foo {
             ($ i:item) => (
                 $ i
@@ -538,7 +548,8 @@ class RsMacroExpansionTest : RsMacroExpansionTestBase() {
     """ to null)
 
     // TODO should work only on 2018 edition
-    fun `test match * vs ? group pattern`() = doTest(MacroExpansionMarks.questionMarkGroupEnd, """
+    fun `test match * vs ? group pattern`() = doTest(
+        MacroExpansionMarks.questionMarkGroupEnd, """
         macro_rules! foo {
             ($ ($ i:ident)?) => (
                 mod question_matched {}
@@ -660,7 +671,8 @@ class RsMacroExpansionTest : RsMacroExpansionTestBase() {
          fn foo() { 2; }
     """)
 
-    fun `test group with the separator the same as the next token 1`() = doTest(MacroExpansionMarks.groupInputEnd1, """
+    fun `test group with the separator the same as the next token 1`() = doTest(
+        MacroExpansionMarks.groupInputEnd1, """
         macro_rules! foo {
             ($($ i:item)=* =) => {
                 $($ i)*
@@ -674,7 +686,8 @@ class RsMacroExpansionTest : RsMacroExpansionTestBase() {
          fn foo() {}
     """)
 
-    fun `test group with the separator the same as the next token 2`() = doTest(MacroExpansionMarks.groupInputEnd2, """
+    fun `test group with the separator the same as the next token 2`() = doTest(
+        MacroExpansionMarks.groupInputEnd2, """
         macro_rules! foo {
             ($($ i:item)=* = #) => {
                 $($ i)*
