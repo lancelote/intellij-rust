@@ -349,6 +349,19 @@ fun <T> runWithEnabledFeature(featureId: String, action: () -> T): T {
     }
 }
 
+fun <T> runWithEnabledFeature(featureId1: String, featureId2: String, action: () -> T): T {
+    val currentValue1 = isFeatureEnabled(featureId1)
+    val currentValue2 = isFeatureEnabled(featureId2)
+    setFeatureEnabled(featureId1, true)
+    setFeatureEnabled(featureId2, true)
+    return try {
+        action()
+    } finally {
+        setFeatureEnabled(featureId1, currentValue1)
+        setFeatureEnabled(featureId2, currentValue2)
+    }
+}
+
 class CachedValueDelegate<T>(provider: () -> CachedValueProvider.Result<T>) {
     private val cachedValue: CachedValue<T> = CachedValueImpl(provider)
 

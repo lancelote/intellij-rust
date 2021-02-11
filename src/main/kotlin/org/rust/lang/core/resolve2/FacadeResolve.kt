@@ -149,7 +149,7 @@ private fun ModData.processMacros(
     return false
 }
 
-private fun filterMacrosByIndex(macroInfos: List<MacroDefInfo>, macroIndex: MacroIndex?): MacroDefInfo? =
+private fun filterMacrosByIndex(macroInfos: List<DeclMacroDefInfo>, macroIndex: MacroIndex?): DeclMacroDefInfo? =
     when {
         macroIndex != null -> macroInfos.getLastBefore(macroIndex)
         else -> macroInfos.last()  // this is kind of error, can choose anything here
@@ -177,10 +177,13 @@ fun <T> RsMacroCall.resolveToMacroUsingNewResolveAndThen(
  *   which is prevented by returning null from macro expansion,
  *   therefore result of [expandedItemsCached] is incomplete (and cached)
  */
-fun RsMacroCall.resolveToMacroWithoutPsi(): RsMacroDefDataWithHash? =
+fun RsMacroCall.resolveToMacroWithoutPsi(): RsMacroDataWithHash<*>? =
     resolveToMacroAndThen(
-        withNewResolve = { def, _ -> RsMacroDefDataWithHash(RsMacroDefData(def.body), def.bodyHash) },
-        withoutNewResolve = { resolveToMacro()?.let { RsMacroDefDataWithHash(it) } }
+        withNewResolve = { def, _ -> RsMacroDataWithHash.fromDefInfo(def) },
+        withoutNewResolve = {
+            val psi = path.reference?.resolve() as? RsNamedElement
+            psi?.let { RsMacroDataWithHash.fromDeclOrProcMacroPsi(it) }
+        }
     )
 
 /** See [resolveToMacroWithoutPsi] */
@@ -196,7 +199,7 @@ fun RsMacroCall.resolveToMacroAndProcessLocalInnerMacros(
     withoutNewResolve: () -> Boolean?
 ): Boolean? =
     resolveToMacroAndThen(withoutNewResolve) { def, info ->
-        if (!def.hasLocalInnerMacros) return@resolveToMacroAndThen null
+        if (def !is DeclMacroDefInfo || !def.hasLocalInnerMacros) return@resolveToMacroAndThen null
         val project = info.project
         val defMap = project.defMapService.getOrUpdateIfNeeded(def.crate) ?: return@resolveToMacroAndThen null
         defMap.root.processMacros(
@@ -314,7 +317,7 @@ private val RsMacroCall.pathSegmentsAdjusted: List<String>?
                 InfoNotFound -> return segments
                 is RsModInfo -> {
                     val def = callExpandedFrom.resolveToMacroDefInfo(info) ?: return segments
-                    def.hasLocalInnerMacros to def.crate
+                    (def is DeclMacroDefInfo && def.hasLocalInnerMacros) to def.crate
                 }
             }
         return when {
@@ -414,7 +417,7 @@ private fun VisItem.scopedMacroToPsi(containingMod: RsMod): RsNamedElement? {
         }
 }
 
-private fun MacroDefInfo.legacyMacroToPsi(containingMod: RsMod, defMap: CrateDefMap): RsMacro? {
+private fun DeclMacroDefInfo.legacyMacroToPsi(containingMod: RsMod, defMap: CrateDefMap): RsMacro? {
     val items = containingMod.expandedItemsCached
     val macro = items.macros.singleOrNull {
         val defIndex = getMacroIndex(it, defMap) ?: return@singleOrNull false

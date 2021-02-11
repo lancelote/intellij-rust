@@ -9,7 +9,6 @@ import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFileWithId
 import org.rust.lang.core.macros.MacroExpansionAndParsingError.ExpansionError
 import org.rust.lang.core.macros.MacroExpansionAndParsingError.ParsingError
-import org.rust.lang.core.macros.decl.DeclMacroExpander
 import org.rust.lang.core.psi.*
 import org.rust.lang.core.psi.ext.stubChildrenOfType
 import org.rust.lang.core.psi.ext.stubDescendantOfTypeOrStrict
@@ -120,12 +119,12 @@ fun getExpansionFromExpandedFile(context: MacroExpansionContext, expandedFile: R
     }
 }
 
-fun DeclMacroExpander.expandMacro(
-    def: RsMacroDefData,
+fun <T: RsMacroData, E> MacroExpander<T, E>.expandMacro(
+    def: T,
     call: RsMacroCall,
     factory: RsPsiFactory,
     storeRangeMap: Boolean
-): RsResult<MacroExpansion, MacroExpansionAndParsingError> {
+): RsResult<MacroExpansion, MacroExpansionAndParsingError<E>> {
     val (expandedText, ranges) = expandMacroAsTextWithErr(def, RsMacroCallData(call))
         .unwrapOrElse { return Err(ExpansionError(it)) }
     val context = call.expansionContext

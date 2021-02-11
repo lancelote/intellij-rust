@@ -284,6 +284,19 @@ fun RsMacroCall.mapRangeFromExpansionToCallBodyStrict(range: TextRange): TextRan
     return mapRangeFromExpansionToCallBody(range).singleOrNull()?.takeIf { it.length == range.length }
 }
 
+fun RsMacroCall.mapRangeFromExpansionToCallBodyRelaxed(range: TextRange): TextRange? {
+    val ranges = mapRangeFromExpansionToCallBody(
+        expansion ?: return null,
+        this,
+        MappedTextRange(range.startOffset, range.startOffset, range.length)
+    )
+    if (ranges.isEmpty()) return null
+    val unitedRanges = ranges
+        .map { it.srcRange to it.dstRange }
+        .reduce { (a1, a2), (b1, b2) -> a1.union(b1) to a2.union(b2) }
+    return unitedRanges.first.takeIf { unitedRanges.second.length == range.length }
+}
+
 private fun RsMacroCall.mapRangeFromExpansionToCallBody(range: TextRange): List<TextRange> {
     val expansion = expansion ?: return emptyList()
     return mapRangeFromExpansionToCallBody(expansion, this, range)

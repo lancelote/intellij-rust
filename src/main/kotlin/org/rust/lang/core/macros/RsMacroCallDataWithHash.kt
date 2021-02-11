@@ -7,4 +7,7 @@ package org.rust.lang.core.macros
 
 import org.rust.stdext.HashCode
 
-class RsMacroCallDataWithHash(val data: RsMacroCallData, val bodyHash: HashCode?)
+class RsMacroCallDataWithHash(
+    val data: RsMacroCallData,
+    val bodyHash: HashCode?
+)

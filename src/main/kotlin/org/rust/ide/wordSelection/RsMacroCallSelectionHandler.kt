@@ -31,7 +31,7 @@ import com.intellij.util.ui.ButtonlessScrollBarUI
 import org.rust.ide.highlight.RsHighlighter
 import org.rust.lang.core.macros.findExpansionElements
 import org.rust.lang.core.macros.findMacroCallExpandedFromNonRecursive
-import org.rust.lang.core.macros.mapRangeFromExpansionToCallBodyStrict
+import org.rust.lang.core.macros.mapRangeFromExpansionToCallBodyRelaxed
 import org.rust.lang.core.psi.RsMacroArgument
 import org.rust.lang.core.psi.ext.ancestorStrict
 import org.rust.lang.core.psi.ext.expansion
@@ -54,15 +54,19 @@ class RsMacroCallSelectionHandler : ExtendWordSelectionHandlerBase() {
         val expansion = macroCall.expansion ?: return null // impossible?
         val expansionText = expansion.file.text
 
+        if (offsetInExpansion > expansionText.length) return null
+
         // A real EditorImpl can't be created outside of EDT (`select` is called outside of EDT since 2020.3)
         val expansionEditor = FakeEditorEx(e.project, expansionText, editor)
 
         val ranges = mutableListOf<TextRange>()
         SelectWordUtil.processRanges(elementInExpansion, expansionText, offsetInExpansion, expansionEditor) {
-            ranges.add(it)
+            if (!it.isEmpty) {
+                ranges.add(it)
+            }
             false // Continue processing (do not believe `Processor`'s docs)
         }
-        return ranges.mapNotNull { macroCall.mapRangeFromExpansionToCallBodyStrict(it) }
+        return ranges.mapNotNull { macroCall.mapRangeFromExpansionToCallBodyRelaxed(it) }
     }
 }
 

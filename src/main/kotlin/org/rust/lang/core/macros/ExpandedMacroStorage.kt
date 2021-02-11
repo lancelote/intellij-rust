@@ -836,7 +836,7 @@ interface ExpandedMacroInfo {
     val expansionFile: VirtualFile?
     val expansionFileHash: Long
     fun getMacroCall(): RsMacroCall?
-    fun isUpToDate(call: RsMacroCall, def: RsMacroDefDataWithHash?): Boolean
+    fun isUpToDate(call: RsMacroCall, def: RsMacroDataWithHash<*>?): Boolean
     fun getExpansion(): MacroExpansion?
 }
 
@@ -855,7 +855,7 @@ class ExpandedMacroInfoImpl(
     override fun getMacroCall(): RsMacroCall? =
         sourceFile.getCallForInfo(this)
 
-    override fun isUpToDate(call: RsMacroCall, def: RsMacroDefDataWithHash?): Boolean =
+    override fun isUpToDate(call: RsMacroCall, def: RsMacroDataWithHash<*>?): Boolean =
         callHash == call.bodyHash && def?.bodyHash == defHash
 
     override fun getExpansion(): MacroExpansion? {
