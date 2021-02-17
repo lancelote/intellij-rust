@@ -492,7 +492,7 @@ private fun ModData.toRsEnum(project: Project): List<RsEnumItem> {
     }
 }
 
-private fun ModData.toRsMod(project: Project): List<RsMod> = toRsModNullable(project)
+fun ModData.toRsMod(project: Project): List<RsMod> = toRsModNullable(project)
     .also {
         if (it.isEmpty()) {
             RESOLVE_LOG.warn("Can't find RsMod for $this")
@@ -525,6 +525,10 @@ private inline fun <reified T : RsNamedElement> RsItemsOwner.getExpandedItemsWit
     return expandedItemsCached.namedCfgDisabled[name]?.filterIsInstance<T>() ?: emptyList()
 }
 
+/**
+ * If all def maps are up-to-date, then returns correct result
+ * Otherwise may return null even if [file] has correct [ModData]
+ */
 fun findModDataFor(file: RsFile): ModData? {
     val project = file.project
     check(project.isNewResolveEnabled)
