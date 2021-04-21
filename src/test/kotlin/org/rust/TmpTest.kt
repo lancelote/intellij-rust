@@ -13,7 +13,7 @@ import kotlin.random.Random
 class TmpTest {
 
     @Test
-    fun test() {
+    fun test_2() {
         Assert.assertNotEquals(1, Random.nextInt(2))
     }
 }
