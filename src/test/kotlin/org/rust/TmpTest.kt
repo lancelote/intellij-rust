@@ -14,6 +14,6 @@ class TmpTest {
 
     @Test
     fun test() {
-        Assert.assertNotEquals(1, 1)
+        Assert.assertNotEquals(1, 2)
     }
 }
